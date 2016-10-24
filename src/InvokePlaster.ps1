@@ -172,6 +172,7 @@ function Invoke-Plaster {
 
         if (!$NoLogo) {
             Write-Host $plasterLogo
+            Write-Host ((" " * 20) + "v$PlasterVersion")
             Write-Host ("=" * 50)
         }
 
