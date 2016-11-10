@@ -67,6 +67,9 @@
             <choice label='Add plat&amp;yPS help generation support'
                     help="Adds help build support using platyPS."
                     value="platyPS"/>
+            <choice label='Add pa&amp;ket .Net package management support'
+                    help="Adds paket bootstrapper and dependency templates"
+                    value="Paket"/>
         </parameter>
 
         <parameter name='Editor'
@@ -104,6 +107,12 @@
         <file source='src\Module.psm1'
               destination='src\${PLASTER_PARAM_ModuleName}.psm1'/>
         <file source='ScriptAnalyzerSettings.psd1'
+              destination=''/>
+        <file condition='$PLASTER_PARAM_Options -contains "paket"'
+              source='_paket\*'
+              destination='.paket'/>
+        <file condition='$PLASTER_PARAM_Options -contains "paket"'
+              source='paket.dependencies'
               destination=''/>
 
         <templateFile condition="$PLASTER_PARAM_Options -contains 'platyPS'"

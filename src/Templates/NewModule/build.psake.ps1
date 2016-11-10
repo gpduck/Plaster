@@ -113,7 +113,23 @@ Task CoreStageFiles -requiredVariables ModuleOutDir, SrcRootDir {
     Copy-Item -Path $SrcRootDir\* -Destination $ModuleOutDir -Recurse -Exclude $Exclude -Verbose:$VerbosePreference
 }
 
-Task Build -depends Init, Clean, BeforeBuild, StageFiles, Analyze, Sign, AfterBuild {
+Task PaketRestore -depends StageFiles, BeforePaketRestore, CorePaketRestore, AfterPaketRestore `
+                  -requiredVariables PaketBootstrapper {
+}
+
+Task CorePaketRestore {
+    if (!(Test-Path -LiteralPath $PaketBootstrapperPath)) {
+        "paket is not installed.  Skipping $($psake.contet.currentTaskName) task."
+        return
+    }
+
+    &$PaketBootstrapperPath
+
+    $PaketPath = Join-Path (Split-Path $PaketBootstrapperPath) "paket.exe"
+    &$PaketPath install
+}
+
+Task Build -depends Init, Clean, BeforeBuild, StageFiles, PaketRestore, Analyze, Sign, AfterBuild {
 }
 
 Task Analyze -depends StageFiles `

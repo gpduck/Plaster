@@ -37,6 +37,10 @@ Properties {
     [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseDeclaredVarsMoreThanAssigments', '')]
     $Exclude = @()
 
+    # ------------------ Paket properties -------------------------------------
+    [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseDeclaredVarsMoreThanAssigments', '')]
+    $PaketBootstrapperPath = "$PSScriptRoot\.paket\paket.bootstrapper.exe"
+
     # ------------------ Script analysis properties ---------------------------
 
     # Enable/disable use of PSScriptAnalyzer to perform script analysis.
@@ -152,6 +156,19 @@ Task BeforeStageFiles {
 
 # Executes after the StageFiles task.
 Task AfterStageFiles {
+}
+
+###############################################################################
+# Customize these tasks for performing operations before and/or after paket restore.
+###############################################################################
+
+
+# Executes before the PaketRestore task.
+Task BeforePaketRestore {
+}
+
+# Executes after the PaketRestore task.
+Task AfterPaketRestore {
 }
 
 ###############################################################################
