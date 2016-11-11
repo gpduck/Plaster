@@ -41,6 +41,9 @@ Properties {
     [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseDeclaredVarsMoreThanAssigments', '')]
     $PaketBootstrapperPath = "$PSScriptRoot\.paket\paket.bootstrapper.exe"
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseDeclaredVarsMoreThanAssigments', '')]
+    $PaketTargetFramework = "net40"
+
     # ------------------ Script analysis properties ---------------------------
 
     # Enable/disable use of PSScriptAnalyzer to perform script analysis.

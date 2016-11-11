@@ -113,11 +113,11 @@ Task CoreStageFiles -requiredVariables ModuleOutDir, SrcRootDir {
     Copy-Item -Path $SrcRootDir\* -Destination $ModuleOutDir -Recurse -Exclude $Exclude -Verbose:$VerbosePreference
 }
 
-Task PaketRestore -depends StageFiles, BeforePaketRestore, CorePaketRestore, AfterPaketRestore `
-                  -requiredVariables PaketBootstrapper {
+Task PaketRestore -depends StageFiles, BeforePaketRestore, CorePaketRestore, AfterPaketRestore {
 }
 
-Task CorePaketRestore {
+Task CorePaketRestore `
+                  -requiredVariables PaketBootstrapperPath {
     if (!(Test-Path -LiteralPath $PaketBootstrapperPath)) {
         "paket is not installed.  Skipping $($psake.contet.currentTaskName) task."
         return
@@ -127,6 +127,23 @@ Task CorePaketRestore {
 
     $PaketPath = Join-Path (Split-Path $PaketBootstrapperPath) "paket.exe"
     &$PaketPath install
+
+    LoadPaketLibrary -Paket $PaketPath
+    $DependenciesPath = Join-Path $PSScriptRoot "paket.dependencies"
+    $Dependencies = New-Object Paket.Dependencies($DependenciesPath)
+
+    $FrameworkId = [Paket.FrameworkDetection]::Extract.Invoke($PaketTargetFramework).Value
+    if(!(Test-Path "$ModuleOutDir\lib")) {
+        New-Item -Path "$ModuleOutDir\lib" -ItemType Directory > $null
+    }
+    $Dependencies.GetInstalledPackages() | ForEach-Object {
+        $Group = $_.Item1
+        $Name = $_.Item2
+        $Version = $_.Item3
+        $Dependencies.GetLibraries($Group, $Name, $FrameworkId) | ForEach-Object {
+            Copy-Item -Path $_ -Destination "$ModuleOutDir\lib\" -Verbose:$VerbosePreference
+        }
+    }
 }
 
 Task Build -depends Init, Clean, BeforeBuild, StageFiles, PaketRestore, Analyze, Sign, AfterBuild {
@@ -705,5 +722,24 @@ function RemoveSetting {
     }
     else {
         Write-Warning "The build setting file '$Path' has not been created yet."
+    }
+}
+
+function LoadPaketLibrary {
+    param(
+        [Parameter(Mandatory)]
+        [String]$Paket
+    )
+    try {
+        $PaketAssembly = [Paket.Dependencies]
+    } catch {
+        $PaketAssembly = $null
+    }
+    if(!$PaketAssembly) {
+        if(Test-Path $Paket) {
+            [System.Reflection.Assembly]::LoadFrom($Paket) > $null
+        } else {
+            Write-Warning "Unable to load paket assembly"
+        }
     }
 }
